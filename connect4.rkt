@@ -38,14 +38,14 @@
     (define/public (change-turn)
       (if (equal? turn 1)
           (set! turn 2)
-          (set! turn 1))
+          (set! turn 1)))
 
     ; functions related to game status
     (define/public (get-status)
       status)
 
     (define/public (update-status value)
-      (set! status value)))))
+      (set! status value))))
 
 (define (reset-board)
   (make-vector (* rows columns) 0))
