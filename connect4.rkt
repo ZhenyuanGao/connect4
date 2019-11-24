@@ -1,5 +1,6 @@
 #lang racket
 (require "connect4ai.rkt")
+(provide (all-defined-out))
 
 ; board: the current game board
 ; turn: the player whose turn it is
@@ -30,8 +31,10 @@
     (define/public (get-turn)
       turn)
 
-    (define/public (change-turn player)
-      (set! turn player))
+    (define/public (change-turn)
+      (if (equal? turn 1)
+          (set! turn 2)
+          (set! turn 1))
 
     ; functions related to game status
     (define/public (get-status)
