@@ -1,4 +1,8 @@
-#lang racket
+#lang slideshow
+(require racket/class
+         racket/gui/base)
+(require (prefix-in 2dtp: 2htdp/image ) )
+(require "Connect_four_window.rkt")
 
 ; board: the current game board
 ; turn: the player whose turn it is
@@ -41,12 +45,12 @@
 
 (define (reset-board)
   (make-vector (* rows columns) 0))
-  ;(vector 0 0 0 0 0 1 0
-  ;        0 0 1 0 0 1 0
-  ;        0 0 1 0 0 1 0
-  ;        1 0 1 0 0 1 1
-  ;        1 0 1 1 0 1 1
-  ;        1 0 1 1 0 1 1))
+;(vector 0 0 0 0 0 1 0
+;        0 0 1 0 0 1 0
+;        0 0 1 0 0 1 0
+;        1 0 1 0 0 1 1
+;        1 0 1 1 0 1 1
+;        1 0 1 1 0 1 1))
 
 (define (print-board board columns)
   (define length (vector-length board))
@@ -127,4 +131,8 @@
 ;  (print " "))
 
 ; game loop
-;(define (game-loop))
+;(define (game-loop)
+  
+  ;(add-drawing (maker-helper  (ch  (for/list ([i (in-range 20 150 20)]) i) 6)
+   ;                           (sort (ch  (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board))))
+;)
