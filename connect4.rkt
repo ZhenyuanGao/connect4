@@ -1,9 +1,8 @@
 #lang slideshow
 (require racket/class
          racket/gui/base)
-(require (prefix-in 2dtp: 2htdp/image ) )
+(require (prefix-in 2dtp: 2htdp/image))
 (require "Connect_four_window.rkt")
-#lang racket
 (require "connect4ai.rkt")
 (provide (all-defined-out))
 
@@ -46,7 +45,7 @@
       status)
 
     (define/public (update-status value)
-      (set! status value))))
+      (set! status value)))))
 
 (define (reset-board)
   (make-vector (* rows columns) 0))
