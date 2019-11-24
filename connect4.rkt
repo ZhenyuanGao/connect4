@@ -1,4 +1,5 @@
 #lang racket
+(require "connect4ai.rkt")
 
 ; board: the current game board
 ; turn: the player whose turn it is
