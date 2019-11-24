@@ -4,7 +4,6 @@
 (require (prefix-in 2dtp: 2htdp/image))
 (require "Connect_four_window.rkt")
 (require "connect4ai.rkt")
-(provide (all-defined-out))
 
 ; board: the current game board
 ; turn: the player whose turn it is
