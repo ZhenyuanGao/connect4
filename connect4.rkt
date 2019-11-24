@@ -19,7 +19,7 @@
     (define/public (get-board)
       board)
 
-    (define/public (get-position position)
+    (define/public (get-piece position)
       (vector-ref board position))
 
     (define/public (update-board position value)
@@ -58,30 +58,75 @@
             (print (vector->values board 0 columns)) ; print a whole row
             (print-board (vector->values board columns (vector-length))))])) ; continue printing
 
+(define (change-turn)
+  (if (equal? (send state get-turn) 1) ; change turn
+      (send state change-turn 2)
+      (send state change-turn 1)))
+
 ; this function handles the dropping of a piece into the board
 ; the function returns the position in the board vector the piece was placed in if successful, otherwise
 ; it returns an error code
 (define (drop-piece state column row columns)
   (define position (+ column (* row columns))) ; place on board to check
+
   ; base cases
   (cond
     [(or (> column columns) (< column 0)) -2] ; invalid column
-    [(or (equal? (send state get-position column) 1) (equal? (send state get-position column) 2)) -1] ; row is full
-    [(equal? (send state get-position position) 0) ; empty spot
+    [(or (equal? (send state get-piece column) 1) (equal? (send state get-piece column) 2)) -1] ; row is full
+    [(equal? (send state get-piece position) 0) ; empty spot
      (let ()
        (send state update-board position (send state get-turn)) ; place piece in empty spot
-       (if (equal? (send state get-turn) 1) ; change turn
-           (send state change-turn 2)
-           (send state change-turn 1))
-       position)]
+       position)] ; return position of placed piece
     [else (drop-piece state column (- row 1) columns)])) ; check the spot above
 
-(define (check-win state position)
-  (print 'hello))
+; this function counts the number of consecutive same colored pieces in a given direction
+; returns the count of consecutive same colored pieces
+(define (check-dir board turn old-position columns get-next-pos)
+  (define position (get-next-pos old-position columns))
+  
+  (print position)
+  (print " ")
+  (print (get-next-pos position columns))
+  (print " ")
+  (cond
+    ; return if continuing means going off of the board
+    [(or (and (equal? (modulo position columns) 0) ; check if piece is at left border
+              (equal? (modulo (get-next-pos position columns) columns) (- columns 1))) ; check if the next piece in the direction would pass border
+         (and (equal? (modulo position columns) (- columns 1)) ; check if piece is at right border
+              (equal? (modulo (get-next-pos position columns) columns) 0)) ; check if the next piece in the direction would pass border
+         (> position (- (vector-length board) 1))) (let () (print "i failed 1") 0)] ; pass bottom border
+    ; if piece matches, continue in the same direction
+    [(equal? (vector-ref board position) turn) (+ (check-dir board turn position columns get-next-pos) 1)]
+    ; no match
+    [else (let () (print "i failed 2") 0)]))
+
+
+; this function checks to see if someone has gotten a connect4
+; returns true or false
+(define (check-win state position columns)
+  (define board (send state get-board))
+  (define turn (send state get-turn))
+
+  (cond
+    [(equal? position (- (vector-length board) 3)) #f] ; no connect4 found after reaching the end of the board (last three don't need to be checked)
+    [(equal? (vector-ref board position) turn) (cond ; if selected position matches player's piece, check for connect4 in the directions around it that haven't been explored
+                                                 [(> (+ (check-dir board turn position columns (lambda (p n) (+ p (- n 1)))) 1) 3) #t] ; check down and left
+                                                 [(> (+ (check-dir board turn position columns (lambda (p n) (+ p n))) 1) 3) #t] ; check down
+                                                 [(> (+ (check-dir board turn position columns (lambda (p n) (+ p (+ n 1)))) 1) 3) #t] ; check down and right
+                                                 [(> (+ (check-dir board turn position columns (lambda (p n) (+ p 1))) 1) 3) #t] ; check right
+                                                 [else (check-win state (+ position 1) columns)])] ; no connect4 found from this position, go to next position
+    [else (check-win state (+ position 1) columns)])) ; if selected position doesn't have player's piece, go to next position
 
 (define rows 6)
 (define columns 7)
 (define game-state (new state% [current-board (reset-board)] [current-turn 1] [current-status 1]))
+
+(drop-piece game-state 0 5 columns)
+(for ([i '(0 1 2)])
+  (print (drop-piece game-state 1 5 columns))
+  (print " ")
+  (print (drop-piece game-state 0 5 columns))
+  (print " "))
 
 ; game loop
 ;(define (game-loop))
