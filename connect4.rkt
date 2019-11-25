@@ -20,7 +20,7 @@
 ;while winning conditions are not satisfied, run the game
 (define (game-loop)
   (if (= (send game-state get-status) 0) ; exit when game no longer running
-      0
+      (displayln "See ya next time!")
       (let ()
         (if (equal? (send game-state get-turn) 1) ; check to see who goes
             #| Human Goes |#
@@ -31,8 +31,8 @@
 
               (println (maker-helper  (ch  (for/list ([i (in-range 20 150 20)]) i) 6)
                                       (sort (ch  (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board))) ; print board
-              (cond [(= (check-win game-state 0 columns) 1) (let ()(send game-state change-status 0)(displayln "Human wins!"))] ; check for win condition
-                    [(= (check-win game-state 0 columns) 2) (let ()(send game-state change-status 0)(displayln "Computer wins!"))]
+              (cond [(= (check-win game-state 0 columns) 1) (let ()(send game-state change-status 0)(displayln "You win!"))] ; check for win condition
+                    [(= (check-win game-state 0 columns) 2) (let ()(send game-state change-status 0)(displayln "Computer wins."))]
                     [(= (check-win game-state 0 columns) 3) (let ()(send game-state change-status 0)(displayln "It is a draw."))])
               (send game-state change-turn) ; change turn
 
@@ -53,4 +53,3 @@
               (game-loop))))))
 
 (game-loop)
-(displayln "Cya next time!")
