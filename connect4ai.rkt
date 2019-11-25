@@ -5,14 +5,6 @@
 ;(require "Connect_four_window.rkt")
 (provide (all-defined-out))
 
-; 0 0 0 2 0 0 0 2 1 2 1 2 1 2 2 1 2 1 2 1 2 1 2 1 1 2 2 1 1 1 1 2 1 2 1 2 2 1 1 1 2 1
-#| 0 0 0 0 0 0 0
-   0 0 2 0 0 0 0
-   2 0 1 1 0 1 0
-   1 2 2 1 2 2 2
-   1 1 1 2 1 2 1
-   2 2 1 1 1 2 1 |#
-
 (define max-depth 5)
 (define game-state (new state% [current-board (make-vector 42 0)] [current-turn 1] [current-status 1]))
 
@@ -34,6 +26,7 @@
     ; no added value
     [else 0]))
 
+; returns the total value of the piece in the selected position
 (define (total-dir-value board turn position columns)
   (apply + (cons (calculate-dir-value board turn position columns (lambda (p n) (+ p (- n 1)))) ; down and left
                  (cons (calculate-dir-value board turn position columns (lambda (p n) (+ p n))) ; down
@@ -111,12 +104,6 @@
                                  [else (calculate-utility state columns)])] ; return utility value for tie state
     [(cutoff-test depth) (calculate-utility state columns)] ; return the value of the state at the max depth search
     [(min default-value (get-max-values state (get-actions state columns) (+ depth 1) columns))]))
-  #|(if (not(equal? win-value 0)) ; check there is a winner or tie
-      (cond
-        [(equal? win-value 1) (+ (- (calculate-utility state columns) 1000))] ; return utility value - 1000 for losing state
-        [(equal? win-value 2) (+ 1000 (calculate-utility state columns))] ; return utility value + 1000 for winning state
-        [else (calculate-utility state columns)]) ; return utility value for tie state
-      (min default-value (get-max-values state (get-actions state columns) columns))))|#
 
 ; returns all possible minimum utility values for this state
 (define (get-min-values state actions depth columns)
@@ -127,10 +114,6 @@
 ; returns that action that yields the state with the highest value
 (define (max-value-position values actions)
   (define (max-value-pos-helper max-value values max-action actions)
-    ;(print "max val")
-    ;(print max-value)
-    ;(print "max action")
-    ;(print max-action)
     (if (eq? values null)
         max-action ; return when list is empty
         (if (> max-value (car values))
@@ -143,31 +126,14 @@
 ; returns the best action THIS IS THE TOP LEVEL FUNCTION FOR SERACHING
 (define (get-best-action state columns)
   (define actions (get-actions state columns))
-  ;(print actions)
-  ;(print (get-min-values state actions 0 columns))
   (max-value-position (get-min-values state actions 0 columns) actions))
 
-
+; this function handles make a move based on player input
 (define (human-play state rows columns)
   (displayln "Please insert your input")
   (when (< (drop-piece state (string->number (read-line)) rows columns) 0)
       (let ()
-        (print "Invalid move, pick a different column.")
+        (displayln "Invalid move, pick a different column.")
         (human-play state rows columns))))
-
-(define (gameloop state)
-  ;(print (maker-helper (ch (for/list ([i (in-range 20 150 20)]) i) 6)
-   ;                                                    (sort (ch (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board)))
-  (human-play state (string->number (read-line)) 5 7)
-  (when (equal? (check-win state 0 7) 1) (print "Human wins!"))
-  (send state change-turn)
-
-  ;(print (maker-helper (ch (for/list ([i (in-range 20 150 20)]) i) 6)
-   ;                                                    (sort (ch (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board)))
-  (print(drop-piece state (get-best-action state 7) 5 7))
-  (when (equal? (check-win state 0 7) 2) (print "Computer wins!"))
-  (send state change-turn)
-
-  (gameloop state))
 
   
