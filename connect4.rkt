@@ -5,7 +5,6 @@
 (require "Connect_four_window.rkt")
 (require "game-functions.rkt")
 (require "connect4ai.rkt")
-;(require dyoo-while-loop)
 
 (define rows 6)
 (define columns 7)
@@ -18,8 +17,7 @@
 (maker-helper  (ch  (for/list ([i (in-range 20 150 20)]) i) 6)
                (sort (ch  (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board))
                            
-;while winning conditions are not satisfied, we keep doing the game loop
-;check the status of the game
+;while winning conditions are not satisfied, run the game
 (define (game-loop)
 (if (= (send game-state get-status) 0) ; exit when game no longer running
     0
