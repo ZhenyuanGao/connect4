@@ -31,8 +31,8 @@
 (define (scanner) (display "Please insert your input")(string->number (read-line (current-input-port) 'any)))
 
 ;println the board for the first time
-;(maker-helper  (ch  (for/list ([i (in-range 20 150 20)]) i) 6)
-;               (sort (ch  (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board))
+(maker-helper  (ch  (for/list ([i (in-range 20 150 20)]) i) 6)
+               (sort (ch  (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board))
                            
 ;while winning conditions are not satisfied, we keep doing the game loop
 ;check the status of the game
@@ -40,8 +40,6 @@
   (if (= (send game-state get-status) 0)
       0
       (let ()
-        (println (maker-helper  (ch  (for/list ([i (in-range 20 150 20)]) i) 6)
-                              (sort (ch  (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board))) ; print board
         ;(while  (= (drop-piece game-state (scanner) 5 columns) -2) (continue))
         (display "Turn: ")
         (displayln (if (equal? (send game-state get-turn) 1) "Human" "Computer"))
@@ -51,18 +49,21 @@
         ;change turn after each player played and get the newest game state.
         ;checkwin 0 keep running game status is 0 stop running. When checkwin has three different input 1 means player1 wins,2 means player 2 wins,3 means it is a tie. for winning.
 
-        (cond [(= (check-win game-state 0 columns) 1) (let ()(send game-state change-status 0)(display "Human wins!"))]
+        (println (maker-helper  (ch  (for/list ([i (in-range 20 150 20)]) i) 6)
+                                (sort (ch  (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board))) ; print board
+        (cond [(= (check-win game-state 0 columns) 1) (let ()(send game-state change-status 0)(display "Human wins!"))] ; check for win condition
               [(= (check-win game-state 0 columns) 2) (let ()(send game-state change-status 0)(display "Computer wins!"))]
               [(= (check-win game-state 0 columns) 3) (let ()(send game-state change-status 0)(display "It is a draw."))])
               ;[(= (check-win game-state 0 columns) 0) (display (check-win game-state 0 columns))])
         (send game-state change-turn) ; change turn
-
-        (println (maker-helper  (ch  (for/list ([i (in-range 20 150 20)]) i) 6)
-                                (sort (ch  (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board))) ; print board
+        
         (display "Turn: ")
         (displayln (if (equal? (send game-state get-turn) 1) "Human" "Computer"))
         (drop-piece game-state (get-best-action game-state columns) (- rows 1) columns) ; computer making a move
-        (cond [(= (check-win game-state 0 columns) 1) (let ()(send game-state change-status 0)(display "Human wins!"))]
+
+        (println (maker-helper  (ch  (for/list ([i (in-range 20 150 20)]) i) 6)
+                              (sort (ch  (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board))) ; print board
+        (cond [(= (check-win game-state 0 columns) 1) (let ()(send game-state change-status 0)(display "Human wins!"))] ; check for win condtion
               [(= (check-win game-state 0 columns) 2) (let ()(send game-state change-status 0)(display "Computer wins!"))]
               [(= (check-win game-state 0 columns) 3) (let ()(send game-state change-status 0)(display "It is a draw."))])
               ;[(= (check-win game-state 0 columns) 0) (display (check-win game-state 0 columns))])
@@ -73,6 +74,7 @@
  
   ;(display "you win lol")
 (game-loop)
+(displayln "Cya next time!")
 ;()
 ;(while  (= (drop-piece game-state (scanner) 5 columns) -2)(continue)  )
 ;                         (maker-helper  (ch  (for/list ([i (in-range 20 150 20)]) i) 6)
