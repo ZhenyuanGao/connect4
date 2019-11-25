@@ -19,37 +19,38 @@
                            
 ;while winning conditions are not satisfied, run the game
 (define (game-loop)
-(if (= (send game-state get-status) 0) ; exit when game no longer running
-    0
-    (let ()
-      (if (equal? (send game-state get-turn) 1) ; check to see who goes
-          #| Human Goes |#
-          (let ()
-            ;(while  (= (drop-piece game-state (scanner) 5 columns) -2) (continue))
-            (displayln "Turn: Human")
-            (human-play game-state (- rows 1) columns); human making a move
+  (if (= (send game-state get-status) 0) ; exit when game no longer running
+      0
+      (let ()
+        (if (equal? (send game-state get-turn) 1) ; check to see who goes
+            #| Human Goes |#
+            (let ()
+              ;(while  (= (drop-piece game-state (scanner) 5 columns) -2) (continue))
+              (displayln "Turn: Human")
+              (human-play game-state (- rows 1) columns); human making a move
 
-            (println (maker-helper  (ch  (for/list ([i (in-range 20 150 20)]) i) 6)
-                                    (sort (ch  (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board))) ; print board
-            (cond [(= (check-win game-state 0 columns) 1) (let ()(send game-state change-status 0)(displayln "Human wins!"))] ; check for win condition
-                  [(= (check-win game-state 0 columns) 2) (let ()(send game-state change-status 0)(displayln "Computer wins!"))]
-                  [(= (check-win game-state 0 columns) 3) (let ()(send game-state change-status 0)(displayln "It is a draw."))])
-            (send game-state change-turn)) ; change turn
+              (println (maker-helper  (ch  (for/list ([i (in-range 20 150 20)]) i) 6)
+                                      (sort (ch  (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board))) ; print board
+              (cond [(= (check-win game-state 0 columns) 1) (let ()(send game-state change-status 0)(displayln "Human wins!"))] ; check for win condition
+                    [(= (check-win game-state 0 columns) 2) (let ()(send game-state change-status 0)(displayln "Computer wins!"))]
+                    [(= (check-win game-state 0 columns) 3) (let ()(send game-state change-status 0)(displayln "It is a draw."))])
+              (send game-state change-turn) ; change turn
 
-          #| Computer Goes |#
-          (let ()
-            (displayln "Turn: Computer")
-            (drop-piece game-state (get-best-action game-state columns) (- rows 1) columns) ; computer making a move
+              (game-loop))
+            
+            #| Computer Goes |#
+            (let ()
+              (displayln "Turn: Computer")
+              (drop-piece game-state (get-best-action game-state columns) (- rows 1) columns) ; computer making a move
 
-            (println (maker-helper  (ch  (for/list ([i (in-range 20 150 20)]) i) 6)
-                                    (sort (ch  (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board))) ; print board
-            (cond [(= (check-win game-state 0 columns) 1) (let ()(send game-state change-status 0)(displayln "Human wins!"))] ; check for win condtion
-                  [(= (check-win game-state 0 columns) 2) (let ()(send game-state change-status 0)(displayln "Computer wins!"))]
-                  [(= (check-win game-state 0 columns) 3) (let ()(send game-state change-status 0)(displayln "It is a draw."))])
-                  ;[(= (check-win game-state 0 columns) 0) (display (check-win game-state 0 columns))])
-            (send  game-state change-turn))))) ; change turn
-        
-  (game-loop))
+              (println (maker-helper  (ch  (for/list ([i (in-range 20 150 20)]) i) 6)
+                                      (sort (ch  (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board))) ; print board
+              (cond [(= (check-win game-state 0 columns) 1) (let ()(send game-state change-status 0)(displayln "Human wins!"))] ; check for win condtion
+                    [(= (check-win game-state 0 columns) 2) (let ()(send game-state change-status 0)(displayln "Computer wins!"))]
+                    [(= (check-win game-state 0 columns) 3) (let ()(send game-state change-status 0)(displayln "It is a draw."))])
+              (send  game-state change-turn) ; change turn
+
+              (game-loop))))))
 
 (game-loop)
 (displayln "Cya next time!")
