@@ -2,7 +2,7 @@
 ;(require "connect4.rkt")
 (require racket/vector)
 (require "game-functions.rkt")
-;(require "Connect_four_window.rkt")
+(require "Connect_four_window.rkt")
 (provide (all-defined-out))
 
 (define greeting "Hello human.")
@@ -13,13 +13,17 @@
   (print "Hello human."))
 
 ; 0 0 0 2 0 0 0 2 1 2 1 2 1 2 2 1 2 1 2 1 2 1 2 1 1 2 2 1 1 1 1 2 1 2 1 2 2 1 1 1 2 1
+#| 0 0 0 0 0 0 0
+   0 0 2 0 0 0 0
+   2 0 1 1 0 1 0
+   1 2 2 1 2 2 2
+   1 1 1 2 1 2 1
+   2 2 1 1 1 2 1 |#
 
-(define game-state (new state% [current-board (vector 0 0 0 0 0 0 0
-                                                      0 0 0 0 0 0 0
-                                                      0 0 0 0 0 0 0
-                                                      0 0 0 0 1 0 0
-                                                      0 0 2 1 1 0 0
-                                                      0 0 1 2 1 0 0)] [current-turn 2] [current-status 1]))
+(define max-depth 5)
+(define game-state (new state% [current-board (make-vector 42 0)] [current-turn 1] [current-status 1]))
+
+#| UTILITY FUNCTION STUFF |#
 
 (define (calculate-dir-value board turn prev-position columns get-next-pos)
   (define position (get-next-pos prev-position columns))
@@ -54,6 +58,12 @@
 (define (calculate-utility state columns)
   (calculate-utility-helper (send state get-board) (send state get-turn) 0 columns))
 
+
+#| SEARCH STUFF |#
+
+(define (cutoff-test depth)
+  (if (equal? depth max-depth) #t #f))
+
 (define (get-result-state state action columns)
   (define result-state (new state%
                    [current-board (vector-copy (send state get-board))]
@@ -71,22 +81,23 @@
           (max current-max (cdr value-list))
           (max (car value-list) (cdr value-list)))))
 
+; returns the max utility value for this state
+(define (get-max state depth columns)
+  (define default-value -100000)
+  (define win-value (check-win state 0 columns))
+  (cond
+    [(not(equal? win-value 0)) (cond ; check there is a winner or tie
+                                 [(equal? win-value 1) (+ (- (calculate-utility state columns) 1000))] ; return utility value - 1000 for losing state
+                                 [(equal? win-value 2) (+ 1000 (calculate-utility state columns))] ; return utility value + 1000 for winning state
+                                 [else (calculate-utility state columns)])] ; return utility value for tie state
+    [(cutoff-test depth) (calculate-utility state columns)] ; return the value of the state at the max depth search
+    [(max default-value (get-min-values state (get-actions state columns) (+ depth 1) columns))]))
+
 ; returns all possbile maximum utilitly values for this state
-(define (get-max-values state actions columns)
+(define (get-max-values state actions depth columns)
   (if (eq? actions null)
       '()
-      (cons (get-max (get-result-state state (car actions) columns) columns) (get-max-values state (cdr actions) columns))))
-
-; returns the max utility value for this state
-(define (get-max state columns)
-  (define default-value -100)
-  (define win-value (check-win state 0 columns))
-  (if (not(equal? win-value 0)) ; check there is a winner or tie
-      (cond
-        [(equal? win-value 1) -1] ; -1 value computer lost
-        [(equal? win-value 2) 1] ; 1 value computer won
-        [else 0]) ; 0 value tie
-      (max default-value (get-min-values state (get-actions state columns) columns))))
+      (cons (get-max (get-result-state state (car actions) columns) depth columns) (get-max-values state (cdr actions) depth columns))))
 
 ; returns the min value among an integer and a list of integers
 (define (min current-min value-list)
@@ -96,23 +107,31 @@
           (min current-min (cdr value-list))
           (min (car value-list) (cdr value-list)))))
 
+; returns the min utility value for this state
+(define (get-min state depth columns)
+  (define default-value 100000)
+  (define win-value (check-win state 0 columns))
+  (cond
+    [(not(equal? win-value 0)) (cond ; check there is a winner or tie
+                                 [(equal? win-value 1) (+ (- (calculate-utility state columns) 1000))] ; return utility value - 1000 for losing state
+                                 [(equal? win-value 2) (+ 1000 (calculate-utility state columns))] ; return utility value + 1000 for winning state
+                                 [else (calculate-utility state columns)])] ; return utility value for tie state
+    [(cutoff-test depth) (calculate-utility state columns)] ; return the value of the state at the max depth search
+    [(min default-value (get-max-values state (get-actions state columns) (+ depth 1) columns))]))
+  #|(if (not(equal? win-value 0)) ; check there is a winner or tie
+      (cond
+        [(equal? win-value 1) (+ (- (calculate-utility state columns) 1000))] ; return utility value - 1000 for losing state
+        [(equal? win-value 2) (+ 1000 (calculate-utility state columns))] ; return utility value + 1000 for winning state
+        [else (calculate-utility state columns)]) ; return utility value for tie state
+      (min default-value (get-max-values state (get-actions state columns) columns))))|#
+
 ; returns all possible minimum utility values for this state
-(define (get-min-values state actions columns)
+(define (get-min-values state actions depth columns)
   (if (eq? actions null)
       '()
-      (cons (get-min (get-result-state state (car actions) columns) columns) (get-min-values state (cdr actions) columns))))
+      (cons (get-min (get-result-state state (car actions) columns)depth columns) (get-min-values state (cdr actions) depth columns))))
 
-; returns the min utility value for this state
-(define (get-min state columns)
-  (define default-value 100)
-  (define win-value (check-win state 0 columns))
-  (if (not(equal? win-value 0)) ; check there is a winner or tie
-      (cond
-        [(equal? win-value 1) -1] ; -1 value computer lost
-        [(equal? win-value 2) 1] ; 1 value computer won
-        [else 0]) ; 0 value tie
-      (min default-value (get-max-values state (get-actions state columns) columns))))
-
+; returns that action that yields the state with the highest value
 (define (max-value-position values actions)
   (define (max-value-pos-helper max-value values max-action actions)
     ;(print "max val")
@@ -125,15 +144,15 @@
             (max-value-pos-helper max-value (cdr values) max-action (cdr actions))
             (max-value-pos-helper (car values) (cdr values) (car actions) (cdr actions)))))
 
-  (max-value-pos-helper -100 values 0 actions))
+  (max-value-pos-helper -100000 values 0 actions))
 
 
-; returns the best action or actions if tied
+; returns the best action THIS IS THE TOP LEVEL FUNCTION FOR SERACHING
 (define (get-best-action state columns)
   (define actions (get-actions state columns))
   ;(print actions)
-  (print (get-min-values state actions columns))
-  (max-value-position (get-min-values state actions columns) actions))
+  (print (get-min-values state actions 0 columns))
+  (max-value-position (get-min-values state actions 0 columns) actions))
 
 
 (define (get-input state column rows columns)
@@ -143,14 +162,14 @@
         (get-input state (string->number (read-line)) rows columns))))
 
 (define (gameloop state)
-  ;(print (maker-helper (ch (for/list ([i (in-range 20 150 20)]) i) 6)
-    ;                                                   (sort (ch (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board)))
+  (print (maker-helper (ch (for/list ([i (in-range 20 150 20)]) i) 6)
+                                                       (sort (ch (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board)))
   (get-input state (string->number (read-line)) 5 7)
   (when (equal? (check-win state 0 7) 1) (print "Human wins!"))
   (send state change-turn)
 
-  ;(print (maker-helper (ch (for/list ([i (in-range 20 150 20)]) i) 6)
-   ;                                                    (sort (ch (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board)))
+  (print (maker-helper (ch (for/list ([i (in-range 20 150 20)]) i) 6)
+                                                       (sort (ch (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board)))
   (print(drop-piece state (get-best-action state 7) 5 7))
   (when (equal? (check-win state 0 7) 2) (print "Computer wins!"))
   (send state change-turn)
