@@ -2,15 +2,8 @@
 ;(require "connect4.rkt")
 (require racket/vector)
 (require "game-functions.rkt")
-(require "Connect_four_window.rkt")
+;(require "Connect_four_window.rkt")
 (provide (all-defined-out))
-
-(define greeting "Hello human.")
-(define (change-greeting)
-  (set! greeting "Goodbye human."))
-
-(define (greet-ai)
-  (print "Hello human."))
 
 ; 0 0 0 2 0 0 0 2 1 2 1 2 1 2 2 1 2 1 2 1 2 1 2 1 1 2 2 1 1 1 1 2 1 2 1 2 2 1 1 1 2 1
 #| 0 0 0 0 0 0 0
@@ -151,25 +144,26 @@
 (define (get-best-action state columns)
   (define actions (get-actions state columns))
   ;(print actions)
-  (print (get-min-values state actions 0 columns))
+  ;(print (get-min-values state actions 0 columns))
   (max-value-position (get-min-values state actions 0 columns) actions))
 
 
-(define (get-input state column rows columns)
-  (when (< (drop-piece state column rows columns) 0)
+(define (human-play state rows columns)
+  (displayln "Please insert your input")
+  (when (< (drop-piece state (string->number (read-line)) rows columns) 0)
       (let ()
-        (print "try again")
-        (get-input state (string->number (read-line)) rows columns))))
+        (print "Invalid move, pick a different column.")
+        (human-play state rows columns))))
 
 (define (gameloop state)
-  (print (maker-helper (ch (for/list ([i (in-range 20 150 20)]) i) 6)
-                                                       (sort (ch (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board)))
-  (get-input state (string->number (read-line)) 5 7)
+  ;(print (maker-helper (ch (for/list ([i (in-range 20 150 20)]) i) 6)
+   ;                                                    (sort (ch (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board)))
+  (human-play state (string->number (read-line)) 5 7)
   (when (equal? (check-win state 0 7) 1) (print "Human wins!"))
   (send state change-turn)
 
-  (print (maker-helper (ch (for/list ([i (in-range 20 150 20)]) i) 6)
-                                                       (sort (ch (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board)))
+  ;(print (maker-helper (ch (for/list ([i (in-range 20 150 20)]) i) 6)
+   ;                                                    (sort (ch (for/list ([i (in-range 20 130 20)]) i) 7) <) (send game-state get-board)))
   (print(drop-piece state (get-best-action state 7) 5 7))
   (when (equal? (check-win state 0 7) 2) (print "Computer wins!"))
   (send state change-turn)
