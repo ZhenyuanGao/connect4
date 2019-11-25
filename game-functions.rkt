@@ -39,7 +39,7 @@
     (define/public (get-status)
       status)
 
-    (define/public (update-status value)
+    (define/public (change-status value)
       (set! status value))))
 
 (define (reset-board rows columns)
